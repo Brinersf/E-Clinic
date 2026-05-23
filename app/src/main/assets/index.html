@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensus Pro 4.0 - Copiloto Clínico & Farmácia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        clinical: {
+                            bg: '#080F1E',
+                            card: '#11192E',
+                            border: '#1F2E4D',
+                            teal: '#00D4AA',
+                            blue: '#3B82F6',
+                            red: '#EF4444',
+                            orange: '#F97316',
+                            yellow: '#EAB308',
+                            green: '#22C55E'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        h1, h2, h3, h4, .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080F1E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2E4D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00D4AA;
+        }
+        /* Pulsing voice waveform */
+        @keyframes soundwave {
+            0%, 100% { height: 4px; }
+            50% { height: 28px; }
+        }
+        .voice-bar:nth-child(1) { animation: soundwave 0.6s infinite ease-in-out; }
+        .voice-bar:nth-child(2) { animation: soundwave 0.4s infinite ease-in-out 0.1s; }
+        .voice-bar:nth-child(3) { animation: soundwave 0.8s infinite ease-in-out 0.2s; }
+        .voice-bar:nth-child(4) { animation: soundwave 0.5s infinite ease-in-out 0.15s; }
+        .voice-bar:nth-child(5) { animation: soundwave 0.7s infinite ease-in-out 0.05s; }
+        .voice-bar:nth-child(6) { animation: soundwave 0.9s infinite ease-in-out 0.25s; }
+        .voice-bar:nth-child(7) { animation: soundwave 0.45s infinite ease-in-out 0.3s; }
+        .voice-bar:nth-child(8) { animation: soundwave 0.65s infinite ease-in-out 0.1s; }
+    </style>
+</head>
+<body class="bg-clinical-bg text-slate-100 min-h-screen flex flex-col selection:bg-clinical-teal selection:text-clinical-bg antialiased">
+
+    <!-- TOP HEADER BAR -->
+    <header class="border-b border-clinical-border bg-clinical-card/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 rounded-xl bg-gradient-to-tr from-clinical-teal to-clinical-blue text-white flex items-center justify-center">
+                    <i data-lucide="shield-check" class="h-6 w-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-white leading-none">Sensus Pro 4.0</h1>
+                    <span class="text-[10px] font-bold tracking-wider text-clinical-teal uppercase">Farmácia Clínica & Copiloto por Voz</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Gemini Settings Button -->
+                <button onclick="toggleSettingsModal()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-clinical-border bg-clinical-bg hover:border-clinical-teal text-xs font-semibold text-slate-300 transition-all">
+                    <i data-lucide="key" class="h-3.5 w-3.5 text-clinical-teal"></i>
+                    <span>Chave Gemini</span>
+                </button>
+                <div id="api-key-indicator" class="h-2 w-2 rounded-full bg-red-500" title="Chave API pendente"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto flex flex-col transition-all">
+        
+        <!-- DASHBOARD CONTAINER -->
+        <div id="dashboard-view" class="space-y-6">
+            <!-- Radiant Info Card -->
+            <div class="p-6 rounded-2xl bg-gradient-to-r from-[#131E35] to-clinical-card border border-clinical-border flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-clinical-teal/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-1">Copiloto de Admissão, Triage & Segurança Hospitalar</h2>
+                    <p class="text-xs text-slate-400 max-w-xl">
+                        Automatize o monitoramento clínico, verifique interações e duplicidades de medicamentos no leito em tempo real, e utilize ditados integrados para evoluções médicas.
+                    </p>
+                </div>
+                <button onclick="openAddPatientModal()" class="flex items-center space-x-2 px-5 py-3 rounded-xl bg-gradient-to-r from-clinical-teal to-clinical-blue text-clinical-bg font-bold shadow-lg hover:shadow-clinical-teal/20 transition-all hover:scale-[1.02]">
+                    <i data-lucide="plus" class="h-5 w-5 stroke-[3]"></i>
+                    <span>Admitir Paciente</span>
+                </button>
+            </div>
+
+            <!-- List Section -->
+            <div>
+                <h3 class="font-semibold text-white text-base mb-4 flex items-center space-x-2">
+                    <i data-lucide="users" class="h-5 w-5 text-clinical-teal"></i>
+                    <span>Pacientes Internados / Controle de Leitos</span>
+                </h3>
+
+                <!-- Empty state -->
+                <div id="empty-state" class="hidden flex flex-col items-center justify-center p-12 rounded-2xl border border-dashed border-clinical-border bg-clinical-card/40 text-center">
+                    <div class="h-16 w-16 rounded-full bg-clinical-card border border-clinical-border flex items-center justify-center mb-4">
+                        <i data-lucide="frown" class="h-8 w-8 text-slate-500"></i>
+                    </div>
+                    <p class="font-semibold text-slate-300 text-lg">Nenhum paciente ativo no momento</p>
+                    <p class="text-sm text-slate-500 mt-1 max-w-xs">Insira o primeiro paciente clínico para começar a utilizabilidade das abas integradas.</p>
+                </div>
+
+                <!-- Patients Grid -->
+                <div id="patients-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Cards are inject dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- CLINICAL SUITE WORKFLOW DESIGNER (Hidden by default) -->
+        <div id="clinical-suite-view" class="hidden flex-col flex-grow space-y-6">
+            <!-- Suite Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-clinical-border pb-4 gap-4">
+                <div class="flex items-center space-x-3">
+                    <button onclick="exitClinicalSuite()" class="p-2 rounded-lg border border-clinical-border hover:border-slate-500 text-slate-400 hover:text-white transition-all bg-clinical-card">
+                        <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                    </button>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span id="suite-patient-bed" class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#14233C] text-clinical-teal border border-clinical-teal/30">LEITO 12</span>
+                            <span id="suite-patient-triage-badge" class="h-2.5 w-2.5 rounded-full" title="Manchester"></span>
+                        </div>
+                        <h2 id="suite-patient-name" class="text-xl font-bold text-white mt-0.5">Nome do Paciente</h2>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <!-- Export PDF Report -->
+                    <button onclick="printClinicalReport()" class="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-white text-clinical-bg font-bold text-sm shadow hover:bg-slate-100 transition-all">
+                        <i data-lucide="printer" class="h-4 w-4"></i>
+                        <span>Imprimir Prontuário</span>
+                    </button>
+                    <!-- Discharge / Close Button -->
+                    <button onclick="deleteActivePatientConfirm()" class="flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-clinical-red font-bold text-sm transition-all">
+                        <i data-lucide="user-minus" class="h-4 w-4"></i>
+                        <span>Dar Alta / Excluir</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- WORKFLOW NAVIGATION CHIPS -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
+                <div class="flex space-x-2" id="workflow-tabs">
+                    <!-- Inject dynamically -->
+                </div>
+            </div>
+
+            <!-- ACTIVE STAGE CONTAINER -->
+            <div id="stage-content-card" class="p-6 rounded-2xl bg-clinical-card border border-clinical-border shadow-2xl flex-grow min-h-[450px] relative overflow-hidden">
+                
+                <!-- STAGE 0: TRIAGEM -->
+                <div id="stage-viewport-0" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Classificação de Risco de Manchester</h3>
+                        <p class="text-xs text-slate-400">Determine o nível de prioridade clínica de atendimento conforme as definições de cores internacionais.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <!-- Vermelho -->
+                        <div onclick="selectTriage('Vermelho')" id="triage-card-Vermelho" class="triage-card p-4 rounded-xl border border-clinical-border bg-clinical-bg cursor-pointer hover:border-red-500/40 transition-all relative overflow-hidden">
+                            <div class="h-4 w-full bg-clinical-red absolute top-0 left-0"></div>
+                            <h4 class="font-bold text-white mt-2">Emergência</h4>
+                            <span class="text-[10px] text-clinical-red font-bold tracking-wider uppercase block mt-1">Imediato (0 min)</span>
+                            <p class="text-[11px] text-slate-400 mt-2">Ameaça iminente à vida. Exemplo: Parada cardiorrespiratória, traumatismo craniano grave.</p>
+                        </div>
+                        <!-- Laranja -->
+                        <div onclick="selectTriage('Laranja')" id="triage-card-Laranja" class="triage-card p-4 rounded-xl border border-clinical-border bg-clinical-bg cursor-pointer hover:border-orange-500/40 transition-all relative overflow-hidden">
+                            <div class="h-4 w-full bg-clinical-orange absolute top-0 left-0"></div>
+                            <h4 class="font-bold text-white mt-2">Muito Urgente</h4>
+                            <span class="text-[10px] text-clinical-orange font-bold tracking-wider uppercase block mt-1">Até 10 min</span>
+                            <p class="text-[11px] text-slate-400 mt-2">Risco severo. Dor torácica opressiva, acidente vascular cerebral agudo.</p>
+                        </div>
+                        <!-- Amarelo -->
+                        <div onclick="selectTriage('Amarelo')" id="triage-card-Amarelo" class="triage-card p-4 rounded-xl border border-clinical-border bg-clinical-bg cursor-pointer hover:border-yellow-500/40 transition-all relative overflow-hidden">
+                            <div class="h-4 w-full bg-clinical-yellow absolute top-0 left-0"></div>
+                            <h4 class="font-bold text-white mt-2">Urgente</h4>
+                            <span class="text-[10px] text-clinical-yellow font-bold tracking-wider uppercase block mt-1">Até 50 min</span>
+                            <p class="text-[11px] text-slate-400 mt-2">Gravidade moderada. Dor intensa, picos hipertensivos sintomáticos.</p>
+                        </div>
+                        <!-- Verde -->
+                        <div onclick="selectTriage('Verde')" id="triage-card-Verde" class="triage-card p-4 rounded-xl border border-clinical-border bg-clinical-bg cursor-pointer hover:border-green-500/40 transition-all relative overflow-hidden">
+                            <div class="h-4 w-full bg-clinical-green absolute top-0 left-0"></div>
+                            <h4 class="font-bold text-white mt-2">Pouco Urgente</h4>
+                            <span class="text-[10px] text-clinical-green font-bold tracking-wider uppercase block mt-1">Até 120 min</span>
+                            <p class="text-[11px] text-slate-400 mt-2">Baixo risco. Cefaleias crônicas de leve intensidade, sintomas gripais isolados.</p>
+                        </div>
+                        <!-- Azul -->
+                        <div onclick="selectTriage('Azul')" id="triage-card-Azul" class="triage-card p-4 rounded-xl border border-clinical-border bg-clinical-bg cursor-pointer hover:border-blue-500/40 transition-all relative overflow-hidden">
+                            <div class="h-4 w-full bg-clinical-blue absolute top-0 left-0"></div>
+                            <h4 class="font-bold text-white mt-2">Não Urgente</h4>
+                            <span class="text-[10px] text-clinical-blue font-bold tracking-wider uppercase block mt-1">Até 240 min</span>
+                            <p class="text-[11px] text-slate-400 mt-2">Problemas crônicos e sem alterações agudas. Renovação de receita.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-[#14233C] border border-[#233D6B] flex items-start space-x-3">
+                        <i data-lucide="shield-alert" class="h-5 w-5 text-clinical-teal shrink-0 mt-0.5"></i>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            A cor selecionada determina o tempo de atendimento prioritário sugerido pelo algoritmo e será destacada ao longo do prontuário do paciente e na ficha de leitos.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- STAGE 1: ADMISSÃO -->
+                <div id="stage-viewport-1" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Dados de Identificação Admissional</h3>
+                        <p class="text-xs text-slate-400">Registre os dados fundamentais do paciente e queixas que fundamentaram a entrada sistêmica.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nome Completo</label>
+                            <input type="text" id="form-name" oninput="updateActivePatient('name', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Leito / Setor</label>
+                            <input type="text" id="form-bed" oninput="updateActivePatient('bed', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Data de Nascimento</label>
+                            <input type="text" placeholder="Ex: DD/MM/AAAA" id="form-birthDate" oninput="updateActivePatient('birthDate', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Alergias Conhecidas</label>
+                            <input type="text" placeholder="Ex: Dipirona, Penicilina, Látex (Ou 'Nega')" id="form-allergies" oninput="updateActivePatient('allergies', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Queixa Principal (Anamnese rápida)</label>
+                        <textarea id="form-chiefComplaint" oninput="updateActivePatient('chiefComplaint', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal outline-none transition-all h-24" placeholder="Fale ou escreva qual a principal reclamação clínica do paciente ao adentrar o plantão médico..."></textarea>
+                    </div>
+                </div>
+
+                <!-- STAGE 2: VITAIS -->
+                <div id="stage-viewport-2" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Sinais Vitais Multiparamétricos</h3>
+                        <p class="text-xs text-slate-400">Insira as aferições fisiológicas para acompanhamento de estabilidade hemodinâmica.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">PA (Sistólica/Diastólica)</label>
+                            <input type="text" placeholder="Ex: 120/80" id="form-pa" oninput="updateActivePatient('pa', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">FC (bpm)</label>
+                            <input type="text" placeholder="Ex: 78" id="form-fc" oninput="updateActivePatient('fc', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Temperatura (°C)</label>
+                            <input type="text" placeholder="Ex: 36.5" id="form-temp" oninput="updateActivePatient('temp', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Sat. O2 (SpO2 %)</label>
+                            <input type="text" placeholder="Ex: 98" id="form-spo2" oninput="updateActivePatient('spo2', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Escala Analógica de Dor</label>
+                            <input type="number" min="0" max="10" placeholder="0 a 10" id="form-pain" oninput="updateActivePatient('pain', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Escala de Glasgow</label>
+                            <input type="number" min="3" max="15" placeholder="3 a 15" id="form-glasgow" oninput="updateActivePatient('glasgow', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm text-center outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: EXAME -->
+                <div id="stage-viewport-3" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Exame Físico por Sistemas</h3>
+                        <p class="text-xs text-slate-400">Descreva os achados semiológicos da avaliação clínica cefalocaudal.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Aparelho Geral</label>
+                            <textarea id="form-examGeral" oninput="updateActivePatient('examGeral', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-20" placeholder="Ex: LOTE, hidratado, corado, anictérico, acianótico..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Aparelho Cardíaco</label>
+                            <textarea id="form-examCardio" oninput="updateActivePatient('examCardio', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-20" placeholder="Ex: RCR, 2T, BNF sem sopros, perfusão periférica adequada..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Aparelho Respiratório</label>
+                            <textarea id="form-examResp" oninput="updateActivePatient('examResp', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-20" placeholder="Ex: MV presente bilateralmente, sem ruídos adventícios, eupnéico..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Aparelho Abdominal</label>
+                            <textarea id="form-examAbd" oninput="updateActivePatient('examAbd', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-20" placeholder="Ex: RHA presentes, indolor à palpação superficial e profunda, sem visceromegalias..."></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Sistema Neurológico</label>
+                        <textarea id="form-examNeuro" oninput="updateActivePatient('examNeuro', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-20" placeholder="Ex: Pupilas isocóricas e fotorreagentes, sem déficits focais aparentes..."></textarea>
+                    </div>
+                </div>
+
+                <!-- STAGE 4: LABS -->
+                <div id="stage-viewport-4" class="stage-view hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Análise de Exames Laboratoriais</h3>
+                            <p class="text-xs text-slate-400">Preencha os exames e o algoritmo fará a sinalização de intervalos de referência automaticamente.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Hemoglobina -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">Hemoglobina (Hb)</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: 12.0 - 17.5 g/dL</span>
+                            </div>
+                            <input type="text" id="lab-hb" oninput="updateLabValue('hb', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                        <!-- Leucócitos -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">Leucócitos</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: 4k - 11k /mm³</span>
+                            </div>
+                            <input type="text" id="lab-leu" oninput="updateLabValue('leu', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                        <!-- Plaquetas -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">Plaquetas</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: 150k - 450k /mm³</span>
+                            </div>
+                            <input type="text" id="lab-pla" oninput="updateLabValue('pla', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                        <!-- Creatinina -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">Creatinina</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: 0.5 - 1.2 mg/dL</span>
+                            </div>
+                            <input type="text" id="lab-crea" oninput="updateLabValue('crea', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                        <!-- PCR -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">P.C.R (C-Reativa)</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: < 5.0 mg/L</span>
+                            </div>
+                            <input type="text" id="lab-crp" oninput="updateLabValue('crp', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                        <!-- Potássio -->
+                        <div class="p-3.5 rounded-xl border border-clinical-border bg-clinical-bg/65 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-300 font-semibold block">Potássio (K+)</span>
+                                <span class="text-[10px] text-slate-500 block">Ref: 3.5 - 5.1 mEq/L</span>
+                            </div>
+                            <input type="text" id="lab-k" oninput="updateLabValue('k', this.value)" class="w-20 px-2 py-1.5 bg-clinical-card border border-clinical-border text-center text-white text-sm rounded-lg focus:border-clinical-teal outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 5: EVOLUÇÃO (Web Speech API Enabled) -->
+                <div id="stage-viewport-5" class="stage-view hidden space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="mic" class="h-5 w-5 text-clinical-teal"></i>
+                                <span>Evolução & Copiloto por Voz</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">Dite notas de evolução clínica de enfermagem e medicina usando sua voz pelo navegador.</p>
+                        </div>
+                        <button onclick="openSpeechHelp()" class="p-2 rounded-lg border border-clinical-border hover:border-clinical-teal transition-all text-slate-400 hover:text-white">
+                            <i data-lucide="help-circle" class="h-5 w-5 text-clinical-teal"></i>
+                        </button>
+                    </div>
+
+                    <!-- Main Dictation area -->
+                    <div class="relative">
+                        <textarea id="form-evolutionText" oninput="updateActivePatient('evolutionText', this.value)" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none transition-all h-40 focus:border-clinical-teal focus:ring-1 focus:ring-clinical-teal" placeholder="Toque no botão de microfone abaixo e dite a nota clínica de evolução do paciente... EX de modelo: 'paciente estável' ou 'paciente melhorou'."></textarea>
+                        
+                        <!-- Floating clear button -->
+                        <button onclick="clearEvolutionEditorText()" class="absolute right-3 top-3 p-1 rounded-full text-slate-500 hover:text-white bg-clinical-card border border-clinical-border transition-all">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Direct Save Action button -->
+                    <button onclick="saveActiveEvolutionToHistory()" id="save-evolution-btn" class="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-clinical-teal text-clinical-bg font-bold shadow hover:bg-emerald-400 duration-150 transition-all">
+                        <i data-lucide="save" class="h-5 w-5 stroke-[2.5]"></i>
+                        <span>Gravar Evolução no Histórico do Paciente</span>
+                    </button>
+
+                    <!-- MICROPHONE CONTROLLER PANEL -->
+                    <div class="p-5 rounded-2xl border border-clinical-border bg-clinical-card shadow-lg flex flex-col items-center justify-center text-center space-y-4">
+                        <span class="text-[10px] font-bold tracking-widest text-clinical-teal uppercase">Painel de Assistência por Voz Web Speech</span>
+                        
+                        <div class="flex items-center justify-center space-x-6">
+                            <!-- Circular Mic Touch target -->
+                            <button id="web-mic-btn" onclick="toggleWebSpeechRec()" class="h-16 w-16 rounded-full flex items-center justify-center border transition-all scale-100 duration-300 relative bg-clinical-teal/10 border-clinical-teal text-clinical-teal active:scale-95 shadow-lg shadow-clinical-teal/10">
+                                <i id="web-mic-icon" data-lucide="mic-off" class="h-7 w-7"></i>
+                            </button>
+
+                            <!-- Live pulsing soundbars -->
+                            <div id="live-soundwave" class="hidden items-center space-x-1.5 h-8">
+                                <span class="voice-bar w-1 bg-clinical-teal rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-blue rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-teal rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-blue rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-teal rounded"></span>
+                                <span class="voice-bar w-1 bg-[#10B981] rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-blue rounded"></span>
+                                <span class="voice-bar w-1 bg-clinical-teal rounded"></span>
+                            </div>
+                        </div>
+
+                        <!-- Status text -->
+                        <div class="space-y-1">
+                            <p id="speech-status-label" class="text-xs text-slate-400 font-medium">Microfone inativo. Toque para iniciar ditado.</p>
+                            <p id="speech-partial-preview" class="text-xs text-clinical-teal italic h-4 block"></p>
+                        </div>
+
+                        <!-- FEEDBACK NOTIFIER -->
+                        <div id="voice-recognized-bubble" class="hidden px-3 py-1.5 rounded-lg bg-clinical-blue/15 text-clinical-blue text-xs font-semibold tracking-wide transition-all border border-clinical-blue/20">
+                            🗣️ Comando executado com sucesso
+                        </div>
+
+                        <!-- SIMULATION TRIPS FOR CHROME PAGES / LOCAL PREVIEW -->
+                        <div class="w-full pt-4 border-t border-clinical-border/50">
+                            <p class="text-[10px] text-slate-400 mb-3 font-semibold uppercase tracking-wider">Injeção Inteligente de Ações Rápidas por Voz (Homologação Física de Microfone)</p>
+                            
+                            <div class="flex flex-wrap gap-2 justify-center">
+                                <button onclick="simulateVoiceCommand('paciente melhorou')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-500 hover:text-white transition-all">
+                                    🗣️ Melhora Progressiva
+                                </button>
+                                <button onclick="simulateVoiceCommand('paciente estável')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-500 hover:text-white transition-all">
+                                    🗣️ Quadro Estável
+                                </button>
+                                <button onclick="simulateVoiceCommand('paciente piorou')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-500 hover:text-white transition-all">
+                                    🗣️ Piora Resp.
+                                </button>
+                                <button onclick="simulateVoiceCommand('adicionar dipirona')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-400 hover:text-white transition-all">
+                                    💊 Add Dipirona
+                                </button>
+                                <button onclick="simulateVoiceCommand('adicionar losartana')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-400 hover:text-white transition-all">
+                                    💊 Add Losartana
+                                </button>
+                                <button onclick="simulateVoiceCommand('chamar ia')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-400 hover:text-white transition-all">
+                                    🧠 Parecer c/ IA
+                                </button>
+                                <button onclick="simulateVoiceCommand('salvar evolução')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-400 hover:text-white transition-all">
+                                    💾 Salvar Nota
+                                </button>
+                                <button onclick="simulateVoiceCommand('apagar tudo')" class="px-2.5 py-1.5 text-[10px] font-bold rounded-lg border border-clinical-border bg-clinical-bg text-slate-300 hover:border-slate-400 hover:text-white transition-all">
+                                    ♻️ Limpar Nota
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CLINICAL EVOLUTIONS HISTORY SECTION (AS REQUESTED) -->
+                    <div class="pt-4 border-t border-clinical-border/50 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-sm text-slate-200 flex items-center space-x-2">
+                                <i data-lucide="history" class="h-4.5 w-4.5 text-clinical-blue"></i>
+                                <span>Histórico do Prontuário (<span id="history-counter">0</span>)</span>
+                            </h4>
+                            <button onclick="clearAllEvolutionsFromHistory()" id="clear-history-header-btn" class="hidden text-xs text-red-400 hover:text-red-300 transition-all font-semibold flex items-center space-x-1">
+                                <i data-lucide="refresh-cw" class="h-3 w-3"></i>
+                                <span>Apagar Histórico</span>
+                            </button>
+                        </div>
+
+                        <!-- Evolutions dynamic list container -->
+                        <div id="evolutions-history-list" class="space-y-3">
+                            <!-- Empty History Indicator -->
+                            <div class="p-8 text-center rounded-xl bg-clinical-bg/40 border border-clinical-border/50 text-slate-500">
+                                <i data-lucide="folder-archive" class="h-8 w-8 text-slate-600 mx-auto mb-2"></i>
+                                <span class="text-xs block">Histórico clínico de evolução livre de notas.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 6: MEDICAMENTOS & SEGURANÇA -->
+                <div id="stage-viewport-6" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Reconciliação e Segurança de Medicamentos</h3>
+                        <p class="text-xs text-slate-400">Insira medicamentos de uso contínuo de casa (Reconciliação) e prescreva os do hospital. O sistema alerta contra duplicações.</p>
+                    </div>
+
+                    <!-- Clinical Warnings Hub Banner -->
+                    <div id="safety-warning-banner" class="hidden p-4 rounded-xl border border-clinical-red/30 bg-clinical-red/10 text-clinical-red flex items-start space-x-3">
+                        <i data-lucide="alert-triangle" class="h-6 w-6 shrink-0 mt-0.5 animate-pulse"></i>
+                        <div>
+                            <span class="font-bold text-xs uppercase block">ALERTA SENSUS DE FARMACOVIGILÂNCIA</span>
+                            <p id="safety-warning-text" class="text-xs text-slate-300 leading-relaxed mt-1">Nenhum perigo iminente de colisão medicinal programada.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Medicamentos de Casa -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-xs uppercase text-slate-400 tracking-wider">1. Medicamentos de Uso Contínuo (Domiciliar)</h4>
+                                <button onclick="openAddHomeMedModal()" class="text-xs text-clinical-teal hover:underline flex items-center space-x-1 font-bold">
+                                    <i data-lucide="plus" class="h-3 w-3"></i>
+                                    <span>Adicionar</span>
+                                </button>
+                            </div>
+
+                            <div id="home-meds-list" class="space-y-2">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Prescrição Hospitalar -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-xs uppercase text-slate-400 tracking-wider">2. Prescrição de Medicamentos Hospitalares</h4>
+                                <button onclick="openAddHospitalPrescModal()" class="text-xs text-clinical-teal hover:underline flex items-center space-x-1 font-bold">
+                                    <i data-lucide="plus" class="h-3 w-3"></i>
+                                    <span>Prescrever</span>
+                                </button>
+                            </div>
+
+                            <div id="hospital-presc-list" class="space-y-2">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 7: LAUDO IA & ALTA (Gemini Enabled) -->
+                <div id="stage-viewport-7" class="stage-view hidden space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Parecer Clínico Automatizado (IA)</h3>
+                        <p class="text-xs text-slate-400">Com base em todas as informações preenchidas de sinaleira e exames, a IA gera um parecer farmacológico completo e orientações.</p>
+                    </div>
+
+                    <!-- Gemini API Guidance text container -->
+                    <div class="p-5 rounded-2xl border border-clinical-border bg-clinical-bg/50">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-[10px] font-bold tracking-widest text-[#38BDF8] uppercase">Parecer de Farmacovigilância estruturado</span>
+                            
+                            <button id="trigger-ia-btn" onclick="generateAIClinicalGuidanceWeb()" class="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-clinical-blue to-indigo-600 hover:from-blue-400 text-white font-bold text-xs shadow transition-all hover:scale-105">
+                                <i data-lucide="sparkles" class="h-4 w-4"></i>
+                                <span>Solicitar Análise Inteligente</span>
+                            </button>
+                        </div>
+
+                        <div id="clinical-guidance-content" class="text-xs leading-relaxed text-slate-300 space-y-3 prose prose-invert max-w-none">
+                            <div class="p-8 text-center text-slate-500">
+                                <i data-lucide="cpu" class="h-10 w-10 text-slate-600 mx-auto mb-2 animate-bounce"></i>
+                                <span class="text-xs">Clique no botão para iniciar a análise analítica de leito com o Gemini.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safe Discharge Checklist -->
+                    <div class="pt-4 border-t border-clinical-border">
+                        <h4 class="font-bold text-sm text-white mb-3">Critérios de Alta Segura</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border border-clinical-border bg-clinical-bg/40 cursor-pointer">
+                                <input type="checkbox" id="check-discharge-1" class="rounded border-clinical-border text-clinical-teal focus:ring-clinical-teal bg-clinical-bg h-4 w-4">
+                                <span class="text-xs text-slate-300">Paciente afebril e hemodinamicamente estável nas últimas 24h</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border border-clinical-border bg-clinical-bg/40 cursor-pointer">
+                                <input type="checkbox" id="check-discharge-2" class="rounded border-clinical-border text-clinical-teal focus:ring-clinical-teal bg-clinical-bg h-4 w-4">
+                                <span class="text-xs text-slate-300">Dificuldades solucionadas com o medicamento reconciliado</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border border-clinical-border bg-clinical-bg/40 cursor-pointer">
+                                <input type="checkbox" id="check-discharge-3" class="rounded border-clinical-border text-clinical-teal focus:ring-clinical-teal bg-clinical-bg h-4 w-4">
+                                <span class="text-xs text-slate-300">Sintomas inicias sanados ou sob controle ambulatorial</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border border-clinical-border bg-clinical-bg/40 cursor-pointer">
+                                <input type="checkbox" id="check-discharge-4" class="rounded border-clinical-border text-clinical-teal focus:ring-clinical-teal bg-clinical-bg h-4 w-4">
+                                <span class="text-xs text-slate-300">Equipe médica e de enfermagem autorizaram o desfecho de alta</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEXT/PREVIOUS ACTION CONTROLS -->
+                <div class="flex items-center justify-between border-t border-clinical-border mt-8 pt-6">
+                    <button onclick="navigateWorkflow(-1)" id="workflow-back-btn" class="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl border border-clinical-border bg-clinical-bg hover:border-slate-500 text-slate-400 hover:text-white transition-all text-sm font-semibold">
+                        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                        <span>Anterior</span>
+                    </button>
+
+                    <button onclick="navigateWorkflow(1)" id="workflow-next-btn" class="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-clinical-teal text-clinical-bg font-bold transition-all text-sm hover:scale-102">
+                        <span>Próximo</span>
+                        <i data-lucide="arrow-right" class="h-4 w-4 stroke-[2.5]"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER STATUS -->
+    <footer class="border-t border-clinical-border/55 bg-clinical-card py-4 text-center text-[10px] text-slate-500 font-semibold tracking-wider">
+        SENSUS PRO DIGITAL WEB CLIENT • COPIADO AUTOMATICAMENTE PARA DISPOSITIVOS MÓVEIS • MANCHESTER RISK DESIGN 4.0
+    </footer>
+
+    <!-- SETTINGS MODAL (Gemini Key Setup) -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl border border-clinical-border bg-clinical-card shadow-2xl p-6 relative overflow-hidden">
+            <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                <i data-lucide="settings" class="h-5 w-5 text-clinical-teal"></i>
+                <span>Configuração de Chave API Gemini</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                Insira sua chave de API do Gemini para habilitar análises clínicas em tempo real. Ela ficará armazenada localmente de forma segura no seu navegador.
+            </p>
+
+            <div class="my-4">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Chave API do Gemini</label>
+                <input type="password" id="gemini-token-field" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal" placeholder="Cole sua AIzaSy... aqui">
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-4 border-t border-clinical-border">
+                <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white">Cancelar</button>
+                <button onclick="saveGeminiToken()" class="px-5 py-2 rounded-xl text-xs font-bold bg-clinical-teal text-clinical-bg">Salvar Chave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPEECH HELP DIALOG -->
+    <div id="speech-help-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-lg rounded-2xl border border-clinical-border bg-clinical-card shadow-2xl p-6">
+            <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                <i data-lucide="volume-2" class="h-5 w-5 text-clinical-teal"></i>
+                <span>Dicionário Clínico de Comandos de Voz</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Ative o microfone e dite livremente ou fale um dos comandos especiais abaixo para dominar o prontuário por voz pura:</p>
+
+            <div class="my-4 max-h-[280px] overflow-y-auto space-y-3.5 pr-2">
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"paciente melhorou" ou "melhora clínica"</span>
+                    <span class="text-[11px] text-slate-300 block">Escreve automaticamente um modelo detalhado de melhora geral de plantão.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"paciente estável" ou "quadro estável"</span>
+                    <span class="text-[11px] text-slate-300 block">Insere modelo que relata constância geral de sinais vitais e alimentação adequada.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"paciente piorou" ou "piora ventilatória"</span>
+                    <span class="text-[11px] text-slate-300 block">Digita modelo de taquipneia súbita e queda no padrão respiratório de controle.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"adicionar dipirona" / "adicionar losartana"</span>
+                    <span class="text-[11px] text-slate-300 block">Adiciona imediatamente Dipirona ou Losartana à lista hospitalar corrente.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"salvar evolução" / "registrar evolução"</span>
+                    <span class="text-[11px] text-slate-300 block">Salva e registra de forma limpa a nota de evolução ativa direto no histórico do paciente.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"apagar tudo" / "limpar tudo"</span>
+                    <span class="text-[11px] text-slate-300 block">Zera/limpa instantaneamente toda a caixa de texto de evolução.</span>
+                </div>
+                <div>
+                    <span class="text-xs text-clinical-teal font-extrabold block">"avançar" ou "voltar"</span>
+                    <span class="text-[11px] text-slate-300 block">Navega dinamicamente entre as abas do workflow clínico de ponta a ponta.</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-3 border-t border-clinical-border">
+                <button onclick="closeSpeechHelp()" class="px-5 py-2 bg-clinical-teal text-clinical-bg rounded-xl font-bold text-xs">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD PATIENT DIALOG -->
+    <div id="add-patient-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl border border-clinical-border bg-clinical-card shadow-2xl p-6">
+            <h3 class="text-lg font-bold text-white">Admitir Novo Paciente Clínico</h3>
+            <p class="text-xs text-slate-400 mt-1">Crie a ficha principal do leito para preencher as condutas farmacológicas.</p>
+
+            <div class="space-y-4 my-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Nome Completo</label>
+                    <input type="text" id="new-patient-name" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Leito / Setor</label>
+                    <input type="text" id="new-patient-bed" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-4 border-t border-clinical-border">
+                <button onclick="closeAddPatientModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white">Cancelar</button>
+                <button onclick="submitNewPatient()" class="px-5 py-2 rounded-xl text-xs font-bold bg-clinical-teal text-clinical-bg">Criar Admissão</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD HOME MED DIALOG -->
+    <div id="add-home-med-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl border border-clinical-border bg-clinical-card shadow-2xl p-6">
+            <h3 class="text-base font-bold text-white">Novo Medicamento de Uso Contínuo (Domiciliar)</h3>
+
+            <div class="space-y-4 my-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Nome do Fármaco (Princípio Ativo)</label>
+                    <input type="text" id="home-med-name" placeholder="Ex: Losartana Potássica" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Dosagem / Posologia Habitual</label>
+                    <input type="text" id="home-med-dosage" placeholder="Ex: 50mg VO de 12 em 12 horas" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Conduta na Admissão</label>
+                        <select id="home-med-action" class="w-full px-3 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                            <option value="Manter">Manter</option>
+                            <option value="Suspender">Suspender</option>
+                            <option value="Modificar">Modificar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Justificativa Clínica</label>
+                        <input type="text" id="home-med-justification" placeholder="Ex: Estabilidade de hipertensão" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-4 border-t border-clinical-border">
+                <button onclick="closeAddHomeMedModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">Cancelar</button>
+                <button onclick="submitAddHomeMed()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-clinical-teal text-clinical-bg">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD HOSPITAL PRESC MODAL -->
+    <div id="add-hospital-presc-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl border border-clinical-border bg-clinical-card shadow-2xl p-6">
+            <h3 class="text-base font-bold text-white">Prescrever Medicamento de Uso Intra-Hospitalar</h3>
+
+            <div class="space-y-4 my-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Nome do Medicamento</label>
+                    <input type="text" id="presc-name" placeholder="Ex: Losartana Potássica ou Metoprolol" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Dosagem / Apresentação</label>
+                        <input type="text" id="presc-dosage" placeholder="Ex: 50mg" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Frequência / Intervalo</label>
+                        <input type="text" id="presc-frequency" placeholder="Ex: 12h/12h" class="w-full px-4 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1.5">Via de Administração</label>
+                    <select id="presc-route" class="w-full px-3 py-3 bg-clinical-bg border border-clinical-border rounded-xl text-white text-sm outline-none focus:border-clinical-teal">
+                        <option value="VO">VO (Via Oral)</option>
+                        <option value="IV/EV">IV/EV (Intravenoso)</option>
+                        <option value="SC">SC (Subcutâneo)</option>
+                        <option value="IM">IM (Intramuscular)</option>
+                        <option value="Nasal">Nasal / Inalatório</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end space-x-2 pt-4 border-t border-clinical-border">
+                <button onclick="closeAddHospitalPrescModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">Cancelar</button>
+                <button onclick="submitAddHospitalPresc()" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-clinical-teal text-clinical-bg">Prescrever Fármaco</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FOR WEB CLIENT ENGINE -->
+    <script>
+        // CORE WORKFLOW DEFINITIONS
+        const STAGES = [
+            { id: 0, label: "Triagem", icon: "activity" },
+            { id: 1, label: "Admissão", icon: "scroll" },
+            { id: 2, label: "Vitais", icon: "heart-pulse" },
+            { id: 3, label: "Exame", icon: "stethoscope" },
+            { id: 4, label: "Labs", icon: "beaker" },
+            { id: 5, label: "Evolução", icon: "mic" },
+            { id: 6, label: "Segurança", icon: "shield-alert" },
+            { id: 7, label: "Diretrizes IA", icon: "sparkles" }
+        ];
+
+        // GLOBAL APPLICATION SYSTEM STATE
+        let patients = [];
+        let evolutionsMap = {}; // patientId -> list of evolutions
+        let activePatientId = null;
+        let activeStageIndex = 0;
+
+        // SPEECH RECOGNITION INSTANCE (WEB SPEECH)
+        let recognition = null;
+        let isListening = false;
+
+        // SYSTEM INITIALIZER
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load clinical dataset from LocalStorage database
+            const storedPatients = localStorage.getItem('sensus_patients');
+            const storedEvolutions = localStorage.getItem('sensus_evolutions_map');
+            if (storedPatients) {
+                patients = JSON.parse(storedPatients);
+            } else {
+                // Seed introductory template patients
+                patients = [
+                    {
+                        id: 1001,
+                        name: "Pedro Alcantara Guedes",
+                        bed: "UTI-04",
+                        birthDate: "14/08/1954",
+                        triageClass: "Laranja",
+                        chiefComplaint: "Piora ventilatória associada a picos hipertensivos e dispneia aos pequenos esforços.",
+                        allergies: "Nega alergias",
+                        pa: "155/90",
+                        fc: "94",
+                        temp: "37.2",
+                        spo2: "92",
+                        pain: "4",
+                        glasgow: "15",
+                        examGeral: "Paciente orientado, hidratado, em ar ambiente.",
+                        examCardio: "Bulhas rítmicas normofonéticas sem sopro de carótida.",
+                        examResp: "Murmúrio vesicular diminuído em bases, eupnéico em repouso.",
+                        examAbd: "Indolor à palpação profunda.",
+                        examNeuro: "Sem déficits motores ou focais aparentes.",
+                        labsJson: JSON.stringify({ hb: "12.4", leu: "9500", pla: "240000", crea: "1.1", crp: "14", k: "4.1" }),
+                        evolutionText: "Paciente instável sob monitoramento hemodinâmico.",
+                        clinicalGuidanceText: "",
+                        homeMeds: [
+                            { id: 11, name: "Losartana", dosage: "50mg VO", action: "Manter", justification: "Pressão alta de controle" }
+                        ],
+                        hospitalPrescs: [
+                            { id: 21, name: "Losartana Potássica", dosage: "50mg", frequency: "12h/12h", route: "VO" },
+                            { id: 22, name: "Dipirona Monoidratada", dosage: "500mg", frequency: "6h/6h", route: "IV/EV" }
+                        ]
+                    }
+                ];
+                savePatientsToDB();
+            }
+
+            if (storedEvolutions) {
+                evolutionsMap = JSON.parse(storedEvolutions);
+            } else {
+                // Prepopulate
+                evolutionsMap = {
+                    "1001": [
+                        {
+                            id: 501,
+                            text: "Admitido na enfermaria sob queixas ventilatórias, iniciado protocolo de segundo cheque e reconciliação farmacológica com equipe e paciente.",
+                            timestamp: Date.now() - 3600000
+                        }
+                    ]
+                };
+                saveEvolutionsToDB();
+            }
+
+            // Sync API Indicator
+            syncGeminiKeyStatus();
+
+            // Render Dashboard
+            renderDashboard();
+
+            // Initialize Lucide SVG Icons
+            lucide.createIcons();
+
+            // Setup Speech SpeechRecognition fallback if supportive
+            initSpeechRecognition();
+        });
+
+        // PERSISTENCE ENGINE
+        function savePatientsToDB() {
+            localStorage.setItem('sensus_patients', JSON.stringify(patients));
+        }
+
+        function saveEvolutionsToDB() {
+            localStorage.setItem('sensus_evolutions_map', JSON.stringify(evolutionsMap));
+        }
+
+        // --- DASHBOARD RENDERING ---
+        function renderDashboard() {
+            const grid = document.getElementById('patients-grid');
+            const emptyState = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            if (patients.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                grid.classList.remove('hidden');
+
+                patients.forEach(p => {
+                    // Decide Triage Color class
+                    let colorClass = "bg-clinical-border";
+                    if (p.triageClass === "Vermelho") colorClass = "bg-clinical-red";
+                    else if (p.triageClass === "Laranja") colorClass = "bg-clinical-orange";
+                    else if (p.triageClass === "Amarelo") colorClass = "bg-clinical-yellow";
+                    else if (p.triageClass === "Verde") colorClass = "bg-clinical-green";
+                    else if (p.triageClass === "Azul") colorClass = "bg-clinical-blue";
+
+                    const card = document.createElement('div');
+                    card.className = "p-5 rounded-2xl border border-clinical-border bg-clinical-card hover:border-slate-500 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between h-[180px]";
+                    card.onclick = () => selectPatient(p.id);
+
+                    // Quick vital snippet
+                    const pa = p.pa || "--";
+                    const fc = p.fc || "--";
+                    const spo2 = p.spo2 || "--";
+
+                    // Total active evolutions for this patient
+                    const evCount = evolutionsMap[p.id] ? evolutionsMap[p.id].length : 0;
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#14233C] text-clinical-teal border border-clinical-teal/30">${p.bed || 'SEM LEITO'}</span>
+                                <span class="h-3 w-3 rounded-full ${colorClass}" title="Triage de Manchester (${p.triageClass || 'Sem Triagem'})"></span>
+                            </div>
+                            <h4 class="font-bold text-base text-white mt-3 truncate">${p.name}</h4>
+                            <p class="text-[11px] text-slate-400 mt-1 truncate">Nasc: ${p.birthDate || '--'} | Evoluções: ${evCount}</p>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-clinical-border/40 pt-3 mt-2">
+                            <span class="text-[10px] uppercase font-bold text-slate-500">PA: ${pa} • FC: ${fc} • SpO2: ${spo2}%</span>
+                            <span class="text-xs font-bold text-clinical-teal flex items-center space-x-1">
+                                <span>Ver Prontuário</span>
+                                <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                            </span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                lucide.createIcons();
+            }
+        }
+
+        // --- MANCHESTER CHICK SELECTION ---
+        function selectTriage(color) {
+            const triageCards = document.querySelectorAll('.triage-card');
+            triageCards.forEach(card => {
+                card.classList.remove('ring-2', 'ring-clinical-teal', 'bg-[#15233E]');
+            });
+
+            const activeCard = document.getElementById(`triage-card-${color}`);
+            if (activeCard) {
+                activeCard.classList.add('ring-2', 'ring-clinical-teal', 'bg-[#15233E]');
+            }
+
+            updateActivePatient('triageClass', color);
+            syncPatientHeaderUI();
+        }
+
+        // --- FORM DATA VALUE SYNC ---
+        function updateActivePatient(field, val) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                p[field] = val;
+                savePatientsToDB();
+                syncPatientHeaderUI();
+            }
+        }
+
+        // Sync visual color bar in active view header
+        function syncPatientHeaderUI() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                document.getElementById('suite-patient-name').innerText = p.name || 'Sem nome';
+                document.getElementById('suite-patient-bed').innerText = p.bed ? `LEITO ${p.bed.toUpperCase()}` : 'SEM LEITO';
+                
+                // Set color class for badge
+                const badge = document.getElementById('suite-patient-triage-badge');
+                badge.className = "h-3 w-3 rounded-full";
+                let colorClass = "bg-clinical-border";
+                if (p.triageClass === "Vermelho") colorClass = "bg-clinical-red";
+                else if (p.triageClass === "Laranja") colorClass = "bg-clinical-orange";
+                else if (p.triageClass === "Amarelo") colorClass = "bg-clinical-yellow";
+                else if (p.triageClass === "Verde") colorClass = "bg-clinical-green";
+                else if (p.triageClass === "Azul") colorClass = "bg-clinical-blue";
+                badge.classList.add(colorClass);
+            }
+        }
+
+        // LABS VALUE AUTO-FILLING
+        function updateLabValue(key, val) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                let labs = {};
+                if (p.labsJson) {
+                    try { labs = JSON.parse(p.labsJson); } catch(e) { labs = {}; }
+                }
+                labs[key] = val;
+                p.labsJson = JSON.stringify(labs);
+                savePatientsToDB();
+            }
+        }
+
+        // --- WORKFLOW NAVIGATION PANEL ---
+        function renderWorkflowTabs() {
+            const container = document.getElementById('workflow-tabs');
+            container.innerHTML = '';
+
+            STAGES.forEach((stage, idx) => {
+                const button = document.createElement('button');
+                button.onclick = () => setWorkflowStage(idx);
+                
+                const activeClasses = "bg-clinical-teal text-clinical-bg font-extrabold shadow-lg";
+                const inactiveClasses = "bg-clinical-card border border-clinical-border text-slate-400 hover:border-slate-500 font-semibold";
+                
+                button.className = `flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all duration-150 ${idx === activeStageIndex ? activeClasses : inactiveClasses}`;
+                button.innerHTML = `
+                    <i data-lucide="${stage.icon}" class="h-3.5 w-3.5"></i>
+                    <span>${stage.label}</span>
+                `;
+                container.appendChild(button);
+            });
+            lucide.createIcons();
+        }
+
+        function setWorkflowStage(stageIdx) {
+            activeStageIndex = stageIdx;
+            
+            // Hide all views
+            const views = document.querySelectorAll('.stage-view');
+            views.forEach(v => v.classList.add('hidden'));
+
+            // Show target view
+            const activeView = document.getElementById(`stage-viewport-${stageIdx}`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            // Render/sync stage-specific fields
+            syncStageFields(stageIdx);
+            renderWorkflowTabs();
+
+            // Enable/disable back or next workflow buttons
+            document.getElementById('workflow-back-btn').disabled = (stageIdx === 0);
+            if (stageIdx === STAGES.length - 1) {
+                document.getElementById('workflow-next-btn').innerHTML = `<span>Concluído</span><i data-lucide="check" class="h-4 w-4"></i>`;
+            } else {
+                document.getElementById('workflow-next-btn').innerHTML = `<span>Próximo</span><i data-lucide="arrow-right" class="h-4 w-4"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function navigateWorkflow(direction) {
+            let nextIndex = activeStageIndex + direction;
+            if (nextIndex >= 0 && nextIndex < STAGES.length) {
+                setWorkflowStage(nextIndex);
+            } else if (nextIndex === STAGES.length) {
+                exitClinicalSuite();
+            }
+        }
+
+        // SYNC VALUES WITH ACTIVE VIEW PORTS TO PREVENT LOSS OF DOM DYNAMICS
+        function syncStageFields(stageIdx) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            if (stageIdx === 0) {
+                // Triagem Selection Highlight
+                selectTriage(p.triageClass || '');
+            } else if (stageIdx === 1) {
+                // Identity Input values
+                document.getElementById('form-name').value = p.name || '';
+                document.getElementById('form-bed').value = p.bed || '';
+                document.getElementById('form-birthDate').value = p.birthDate || '';
+                document.getElementById('form-allergies').value = p.allergies || '';
+                document.getElementById('form-chiefComplaint').value = p.chiefComplaint || '';
+            } else if (stageIdx === 2) {
+                // Sinais vitais fields
+                document.getElementById('form-pa').value = p.pa || '';
+                document.getElementById('form-fc').value = p.fc || '';
+                document.getElementById('form-temp').value = p.temp || '';
+                document.getElementById('form-spo2').value = p.spo2 || '';
+                document.getElementById('form-pain').value = p.pain || '';
+                document.getElementById('form-glasgow').value = p.glasgow || '';
+            } else if (stageIdx === 3) {
+                // Exame fisico details
+                document.getElementById('form-examGeral').value = p.examGeral || '';
+                document.getElementById('form-examCardio').value = p.examCardio || '';
+                document.getElementById('form-examResp').value = p.examResp || '';
+                document.getElementById('form-examAbd').value = p.examAbd || '';
+                document.getElementById('form-examNeuro').value = p.examNeuro || '';
+            } else if (stageIdx === 4) {
+                // Exames Laboratoriais fields parsing JSON
+                let labs = {};
+                try { labs = JSON.parse(p.labsJson || '{}'); } catch(e) {}
+                document.getElementById('lab-hb').value = labs.hb || '';
+                document.getElementById('lab-leu').value = labs.leu || '';
+                document.getElementById('lab-pla').value = labs.pla || '';
+                document.getElementById('lab-crea').value = labs.crea || '';
+                document.getElementById('lab-crp').value = labs.crp || '';
+                document.getElementById('lab-k').value = labs.k || '';
+            } else if (stageIdx === 5) {
+                // Evolution editor & history list (AS REQUESTED BY USER FOR SAVE/ERASE CAPABILITY)
+                document.getElementById('form-evolutionText').value = p.evolutionText || '';
+                renderEvolutionsHistoryList();
+            } else if (stageIdx === 6) {
+                // Safety Medication alerts
+                renderMedicationSecurityTab();
+            } else if (stageIdx === 7) {
+                // AI clinical guidance rendering
+                renderAIGuidanceTab();
+            }
+        }
+
+        // --- EVOLUTIONS HISTORY MODULE (USER EXPLICIT REQUIREMENT TO KEEP HISTORY FOR EACH RECORD) ---
+        function renderEvolutionsHistoryList() {
+            const container = document.getElementById('evolutions-history-list');
+            const counter = document.getElementById('history-counter');
+            const clearHeaderBtn = document.getElementById('clear-history-header-btn');
+            container.innerHTML = '';
+
+            const list = evolutionsMap[activePatientId] || [];
+            counter.innerText = list.length;
+
+            if (list.length === 0) {
+                clearHeaderBtn.classList.add('hidden');
+                container.innerHTML = `
+                    <div class="p-8 text-center rounded-xl bg-clinical-bg/40 border border-clinical-border/50 text-slate-500">
+                        <i data-lucide="folder-archive" class="h-8 w-8 text-slate-600 mx-auto mb-2"></i>
+                        <span class="text-xs block">Histórico clínico de evolução livre de notas.</span>
+                    </div>
+                `;
+            } else {
+                clearHeaderBtn.classList.remove('hidden');
+
+                // Sort newest timestamp first
+                const sorted = [...list].sort((a,b) => b.timestamp - a.timestamp);
+                
+                sorted.forEach(ev => {
+                    const formattedDate = new Date(ev.timestamp).toLocaleString('pt-BR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const card = document.createElement('div');
+                    card.className = "p-4 rounded-xl border border-clinical-border bg-clinical-bg/85 flex flex-col justify-between gap-2.5 relative group";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="clock" class="h-3.5 w-3.5 text-clinical-teal"></i>
+                                <span class="text-[11px] font-bold text-clinical-teal text-[#00D4AA]">${formattedDate}</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <!-- Re-fill Evolution inputs -->
+                                <button onclick="refillEvolutionEditorValue('${ev.text.replace(/'/g, "\\'")}')" class="p-1 rounded hover:bg-clinical-border text-slate-400 hover:text-white transition-all" title="Copiar para o Editor">
+                                    <i data-lucide="edit" class="h-3.5 w-3.5"></i>
+                                </button>
+                                <!-- Clear single item -->
+                                <button onclick="deleteSingleEvolutionFromHistory(${ev.id})" class="p-1 rounded hover:bg-clinical-border text-red-400 hover:text-red-300 transition-all" title="Excluir do Histórico">
+                                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-200 leading-relaxed">${ev.text}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            lucide.createIcons();
+        }
+
+        // SAVE EVOLUTION INTO PERSISTENT HISTORY LIST
+        function saveActiveEvolutionToHistory() {
+            const editor = document.getElementById('form-evolutionText');
+            const text = editor.value.trim();
+            if (!text) {
+                alert("Escreva ou dite alguma nota de evolução para salvar!");
+                return;
+            }
+
+            if (!evolutionsMap[activePatientId]) {
+                evolutionsMap[activePatientId] = [];
+            }
+
+            const newEvolution = {
+                id: Date.now(),
+                text: text,
+                timestamp: Date.now()
+            };
+
+            evolutionsMap[activePatientId].push(newEvolution);
+            saveEvolutionsToDB();
+
+            // Clear active note draft
+            editor.value = '';
+            updateActivePatient('evolutionText', '');
+
+            // Notify user and refresh
+            showVoiceCommandFeedback("💾 Evolução salva no histórico!");
+            renderEvolutionsHistoryList();
+        }
+
+        // CLEAR SINGLE EVOLUTION HISTORIC ENTRY
+        function deleteSingleEvolutionFromHistory(evolutionId) {
+            const list = evolutionsMap[activePatientId] || [];
+            evolutionsMap[activePatientId] = list.filter(ev => ev.id !== evolutionId);
+            saveEvolutionsToDB();
+            renderEvolutionsHistoryList();
+            showVoiceCommandFeedback("♻️ Evolução removida!");
+        }
+
+        // CLEAR ALL HISTORIC RECORDS OF THIS PATIENT
+        function clearAllEvolutionsFromHistory() {
+            if (confirm("Tem certeza que deseja apagar permanentemente todo o histórico de evoluções deste paciente?")) {
+                evolutionsMap[activePatientId] = [];
+                saveEvolutionsToDB();
+                renderEvolutionsHistoryList();
+                showVoiceCommandFeedback("♻️ Histórico limpo!");
+            }
+        }
+
+        function refillEvolutionEditorValue(text) {
+            document.getElementById('form-evolutionText').value = text;
+            updateActivePatient('evolutionText', text);
+            showVoiceCommandFeedback("📋 Copiado de volta ao editor!");
+        }
+
+        function clearEvolutionEditorText() {
+            document.getElementById('form-evolutionText').value = '';
+            updateActivePatient('evolutionText', '');
+            showVoiceCommandFeedback("♻️ Campo limpo");
+        }
+
+        // --- WEB SPEECH RECOGNITION (HTML5 API - PLATFORM SYNC) ---
+        function initSpeechRecognition() {
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (window.SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'pt-BR';
+
+                // Realtime events
+                recognition.onstart = () => {
+                    isListening = true;
+                    setMicColorState(true);
+                    document.getElementById('speech-status-label').innerText = "🟢 Ouvindo... Fale a nota clínica ou comandos";
+                    document.getElementById('live-soundwave').classList.remove('hidden');
+                    document.getElementById('live-soundwave').classList.add('flex');
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    setMicColorState(false);
+                    document.getElementById('speech-status-label').innerText = "🎙️ Microfone inativo. Toque para iniciar ditado.";
+                    document.getElementById('live-soundwave').classList.add('hidden');
+                    document.getElementById('live-soundwave').classList.remove('flex');
+                    document.getElementById('speech-partial-preview').innerText = "";
+                };
+
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    if (interimTranscript) {
+                        document.getElementById('speech-partial-preview').innerText = `Ouvindo: "${interimTranscript}"`;
+                    }
+
+                    if (finalTranscript) {
+                        processSpokenPhrase(finalTranscript);
+                    }
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Erro no reconhecimento de voz:", event.error);
+                    let errMsg = "Microfone indispínel ou bloqueado no navegador";
+                    if (event.error === 'not-allowed') {
+                        errMsg = "⚠️ Permissão negada! Conceda acesso ao microfone no navegador";
+                    }
+                    document.getElementById('speech-status-label').innerText = `🔴 Erro: ${errMsg}`;
+                    isListening = false;
+                    setMicColorState(false);
+                };
+            } else {
+                // Speech api is not supported by legacy browser
+                document.getElementById('speech-status-label').innerHTML = `<span class="text-red-400">⚠️ Reconhecimento de Voz nativo indisponível neste navegador. Use os botões de simulação abaixo!</span>`;
+            }
+        }
+
+        function toggleWebSpeechRec() {
+            if (!recognition) {
+                alert("Web Speech API não é suportada por este navegador. Use o painel rápido de atalhos abaixo para simular as falas!");
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error("Erro ao iniciar SpeechRec:", e);
+                }
+            }
+        }
+
+        function setMicColorState(listening) {
+            const btn = document.getElementById('web-mic-btn');
+            const icon = document.getElementById('web-mic-icon');
+            
+            if (listening) {
+                btn.className = "h-16 w-16 rounded-full flex items-center justify-center border transition-all scale-100 duration-300 relative bg-red-500/10 border-clinical-red text-clinical-red active:scale-95 shadow-lg shadow-red-500/10 animate-pulse";
+                icon.setAttribute('data-lucide', 'mic');
+            } else {
+                btn.className = "h-16 w-16 rounded-full flex items-center justify-center border transition-all scale-100 duration-300 relative bg-clinical-teal/10 border-clinical-teal text-clinical-teal active:scale-95 shadow-lg shadow-clinical-teal/10";
+                icon.setAttribute('data-lucide', 'mic-off');
+            }
+            lucide.createIcons();
+        }
+
+        // UNIFIED COMMAND PARSER & TRANSCRIPT PROCESSOR WITH EMBEDDED DRAFTING ACTIONS (AS REQUESTED)
+        function processSpokenPhrase(rawText) {
+            const phrase = rawText.trim().toLowerCase();
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            // Voice Command Logic Mapper
+            if (phrase.includes("apagar tudo") || phrase.includes("limpar tudo") || phrase.includes("limpar texto")) {
+                clearEvolutionEditorText();
+            }
+            else if (phrase.includes("paciente melhorou") || phrase.includes("melhora clínica") || phrase.includes("modelo melhora") || phrase.includes("melhorou")) {
+                applySpeechTemplate("Paciente evolui em melhora clínica progressiva nas últimas horas. Encontra-se cooperativo, orientado, hemodinamicamente estável, afebril, eupnéico em ar ambiente. Refere cessação completa de queixas de dor.");
+                showVoiceCommandFeedback("✨ Aplicou modelo: Melhora");
+            }
+            else if (phrase.includes("paciente estável") || phrase.includes("quadro estável") || phrase.includes("modelo estável") || phrase.includes("estável")) {
+                applySpeechTemplate("Mantém quadro clínico estável sob monitoramento multiparamétrico contínuo de sinais vitais. Consciente, orientado, fotorreagente, perfusão periférica adequada (< 2s). Aceitando dieta habitual.");
+                showVoiceCommandFeedback("✨ Aplicou modelo: Estabilidade");
+            }
+            else if (phrase.includes("paciente piorou") || phrase.includes("piora progressiva") || phrase.includes("piora respiratória") || phrase.includes("modelo piora") || phrase.includes("piorou")) {
+                applySpeechTemplate("Paciente evolui com piora progressiva do padrão respiratório, apresentando taquipneia associada a tiragem intercostal, batimento de asa de nariz e sutil dessaturação (SpO2 89%). Aventada conduta de suporte de oxigênio sob máscara com reservatório e gasometria.");
+                showVoiceCommandFeedback("⚠️ Aplicou modelo: Piora");
+            }
+            else if (phrase.includes("adicionar dipirona")) {
+                addHospitalPrescriptionWeb("Dipirona Monoidratada", "500mg IV/EV", "De 6 em 6 horas", "IV/EV");
+                showVoiceCommandFeedback("💊 Prescreveu: Dipirona 500mg");
+            }
+            else if (phrase.includes("adicionar losartana")) {
+                addHospitalPrescriptionWeb("Losartana Potássica", "50mg VO", "De 12 em 12 horas", "VO");
+                showVoiceCommandFeedback("💊 Prescreveu: Losartana 50mg");
+            }
+            else if (phrase.includes("chamar ia") || phrase.includes("gerar parecer") || phrase.includes("gerar ia") || phrase.includes("analisar com ia")) {
+                showVoiceCommandFeedback("🧠 Solicitou Parecer IA...");
+                setWorkflowStage(7); // Jump to Gemini tab
+                generateAIClinicalGuidanceWeb();
+            }
+            else if (phrase.includes("salvar evolução") || phrase.includes("registrar evolução") || phrase.includes("gravar evolução")) {
+                saveActiveEvolutionToHistory();
+            }
+            else if (phrase.includes("avançar")) {
+                navigateWorkflow(1);
+                showVoiceCommandFeedback("➡️ Avançou de tela");
+            }
+            else if (phrase.includes("voltar")) {
+                navigateWorkflow(-1);
+                showVoiceCommandFeedback("⬅️ Voltou de tela");
+            }
+            else {
+                // Free speech input logging (Appends spoken transcript capitalized)
+                const editor = document.getElementById('form-evolutionText');
+                const curr = editor.value.trim();
+                const capitalized = rawText.trim().replace(/^\w/, c => c.toUpperCase());
+                const nextVal = curr ? `${curr} ${capitalized}` : capitalized;
+                
+                editor.value = nextVal;
+                updateActivePatient('evolutionText', nextVal);
+                showVoiceCommandFeedback(`🗣️ Notas: "${rawText}"`);
+            }
+        }
+
+        // Simulate voice commands easily inside HTML preview
+        function simulateVoiceCommand(text) {
+            processSpokenPhrase(text);
+        }
+
+        function applySpeechTemplate(template) {
+            const editor = document.getElementById('form-evolutionText');
+            const curr = editor.value.trim();
+            const nextVal = curr ? `${curr}\n${template}` : template;
+            editor.value = nextVal;
+            updateActivePatient('evolutionText', nextVal);
+        }
+
+        function showVoiceCommandFeedback(message) {
+            const bubble = document.getElementById('voice-recognized-bubble');
+            bubble.innerText = message;
+            bubble.classList.remove('hidden');
+            setTimeout(() => {
+                bubble.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- MEDICAMENTOS & SEGURANÇA ENGINE (RECONCILIAÇÃO) ---
+        function renderMedicationSecurityTab() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            const homeList = document.getElementById('home-meds-list');
+            const hospList = document.getElementById('hospital-presc-list');
+            homeList.innerHTML = '';
+            hospList.innerHTML = '';
+
+            const listHome = p.homeMeds || [];
+            const listHosp = p.hospitalPrescs || [];
+
+            // Home Meds render
+            if (listHome.length === 0) {
+                homeList.innerHTML = `<p class="text-[11px] text-slate-500 italic p-3 text-center">Nenhum de uso domiciliar cadastrado.</p>`;
+            } else {
+                listHome.forEach((med, mIdx) => {
+                    const pillColor = med.action === "Manter" ? "bg-clinical-green/20 text-clinical-green" : "bg-clinical-orange/20 text-clinical-orange";
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl border border-clinical-border bg-clinical-bg/50 flex items-center justify-between";
+                    item.innerHTML = `
+                        <div>
+                            <span class="text-xs font-bold text-white block">${med.name}</span>
+                            <span class="text-[10px] text-slate-400 block">${med.dosage}</span>
+                            <span class="text-[9px] text-slate-500 italic block mt-1">Justificativa: ${med.justification || 'Nenhuma'}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${pillColor}">${med.action}</span>
+                            <button onclick="deleteHomeMedWeb(${mIdx})" class="p-1 rounded text-red-400 hover:text-red-300">
+                                <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                            </button>
+                        </div>
+                    `;
+                    homeList.appendChild(item);
+                });
+            }
+
+            // Hospitalized meds render
+            if (listHosp.length === 0) {
+                hospList.innerHTML = `<p class="text-[11px] text-slate-500 italic p-3 text-center">Nenhum medicamento intra-hospitalar prescrito.</p>`;
+            } else {
+                listHosp.forEach((presc, pIdx) => {
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl border border-clinical-border bg-clinical-bg/50 flex items-center justify-between";
+                    item.innerHTML = `
+                        <div>
+                            <span class="text-xs font-bold text-white block">${presc.name}</span>
+                            <span class="text-[10px] text-slate-400 block">${presc.dosage} • ${presc.frequency} (Via ${presc.route})</span>
+                        </div>
+                        <button onclick="deleteHospitalPrescWeb(${pIdx})" class="p-1 rounded text-red-400 hover:text-red-300">
+                            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                        </button>
+                    `;
+                    hospList.appendChild(item);
+                });
+            }
+
+            // CALCULATE SAFETY SYSTEM ALERTS (SEGURANÇA DE LEITO)
+            calculateSafetyWarningsWeb(listHome, listHosp);
+            lucide.createIcons();
+        }
+
+        function calculateSafetyWarningsWeb(homes, hosps) {
+            const banner = document.getElementById('safety-warning-banner');
+            const alertText = document.getElementById('safety-warning-text');
+            banner.classList.add('hidden');
+
+            const alerts = [];
+
+            // Detect Duplications
+            hosps.forEach(hosp => {
+                homes.forEach(home => {
+                    if (hosp.name.toLowerCase().includes(home.name.toLowerCase()) || home.name.toLowerCase().includes(hosp.name.toLowerCase())) {
+                        if (home.action === "Manter") {
+                            alerts.push(`⚠️ ATENÇÃO: Risco de duplicidade detectado! "${hosp.name}" foi prescrita no hospital enquanto o paciente já toma "${home.name}" diariamente de casa e foi marcado para manter. Suspenda uma das vias para evitar sobredose.`);
+                        }
+                    }
+                });
+            });
+
+            // Prevent generic ACE-I duplication classes
+            const aceList = ["captopril", "enalapril", "ramipril", "losartana", "valsartana"];
+            let activeACECount = 0;
+            const foundAce = [];
+
+            [...homes, ...hosps].forEach(m => {
+                const lower = m.name.toLowerCase();
+                const matched = aceList.find(x => lower.includes(x));
+                if (matched && !foundAce.includes(matched)) {
+                    activeACECount++;
+                    foundAce.push(matched);
+                }
+            });
+
+            if (activeACECount > 1) {
+                alerts.push(`⚠️ ATENÇÃO DE CLASSE: Mais de um anti-hipertensivo inibidor da ECA / BRA ativo paralelamente no prontuário (${foundAce.join(', ').toUpperCase()}). Risco severo de hipotensão súbita e insuficiência renal.`);
+            }
+
+            if (alerts.length > 0) {
+                banner.classList.remove('hidden');
+                alertText.innerHTML = alerts.join('<br><br>');
+            }
+        }
+
+        // CLINICAL PRESCRIPTION ACTION IMPLEMENTER
+        function addHospitalPrescriptionWeb(name, dosage, freq, route) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                if (!p.hospitalPrescs) p.hospitalPrescs = [];
+                p.hospitalPrescs.push({
+                    id: Date.now(),
+                    name: name,
+                    dosage: dosage,
+                    frequency: freq,
+                    route: route
+                });
+                savePatientsToDB();
+                if (activeStageIndex === 6) renderMedicationSecurityTab();
+            }
+        }
+
+        // ADMIN CONTROLLER SUBMISSION FOR POPUP INSERTS
+        function submitAddHomeMed() {
+            const name = document.getElementById('home-med-name').value.trim();
+            const dosage = document.getElementById('home-med-dosage').value.trim();
+            const action = document.getElementById('home-med-action').value;
+            const justification = document.getElementById('home-med-justification').value.trim();
+
+            if (!name) { alert("Nome do medicamento domiciliar em branco!"); return; }
+
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                if (!p.homeMeds) p.homeMeds = [];
+                p.homeMeds.push({ id: Date.now(), name, dosage, action, justification });
+                savePatientsToDB();
+                closeAddHomeMedModal();
+                renderMedicationSecurityTab();
+            }
+        }
+
+        function submitAddHospitalPresc() {
+            const name = document.getElementById('presc-name').value.trim();
+            const dosage = document.getElementById('presc-dosage').value.trim();
+            const frequency = document.getElementById('presc-frequency').value.trim();
+            const route = document.getElementById('presc-route').value;
+
+            if (!name) { alert("Designação do medicamento em branco!"); return; }
+
+            addHospitalPrescriptionWeb(name, dosage, frequency, route);
+            closeAddHospitalPrescModal();
+            renderMedicationSecurityTab();
+        }
+
+        function deleteHomeMedWeb(idx) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                p.homeMeds.splice(idx, 1);
+                savePatientsToDB();
+                renderMedicationSecurityTab();
+            }
+        }
+
+        function deleteHospitalPrescWeb(idx) {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                p.hospitalPrescs.splice(idx, 1);
+                savePatientsToDB();
+                renderMedicationSecurityTab();
+            }
+        }
+
+        // --- GEMINI AI CLINICAL GUIDANCE RETRIEVER ---
+        function renderAIGuidanceTab() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (p) {
+                const container = document.getElementById('clinical-guidance-content');
+                if (p.clinicalGuidanceText) {
+                    container.innerHTML = `<div class="p-4 rounded-xl bg-clinical-bg border border-clinical-border whitespace-pre-line text-xs">${formattedMarkdownRender(p.clinicalGuidanceText)}</div>`;
+                } else {
+                    container.innerHTML = `
+                        <div class="p-8 text-center text-slate-500">
+                            <i data-lucide="cpu" class="h-10 w-10 text-slate-600 mx-auto mb-2 animate-bounce"></i>
+                            <span class="text-xs block">Nenhum parecer gerado. Clique no botão de Solicitar Análise acima para carregar o parecer do Gemini.</span>
+                        </div>
+                    `;
+                }
+            }
+            lucide.createIcons();
+        }
+
+        async function generateAIClinicalGuidanceWeb() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            const btn = document.getElementById('trigger-ia-btn');
+            const container = document.getElementById('clinical-guidance-content');
+            
+            // Fetch token from LocalStorage
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                alert("Para chamar a Inteligência Artificial, por favor configure sua chave de API do Gemini no botão 'Chave Gemini' no topo da tela.");
+                toggleSettingsModal();
+                return;
+            }
+
+            // Set loading state
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="h-4 w-4 animate-spin"></i><span>Analisando Prontuário...</span>`;
+            container.innerHTML = `
+                <div class="p-8 text-center text-clinical-teal space-y-3">
+                    <i data-lucide="loader" class="h-8 w-8 animate-spin mx-auto text-clinical-teal"></i>
+                    <p class="text-xs font-semibold">Iniciando análise clínica preditiva do prontuário...</p>
+                    <p class="text-[10px] text-slate-500">Sincronizando vitais, laboratórios e reconciliação farmacológica com o Gemini-3.5-Flash.</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            // Construct exact programmatic prompt
+            let labsText = "Nenhum lab informado";
+            if (p.labsJson) {
+                try {
+                    const parsed = JSON.parse(p.labsJson);
+                    labsText = Object.entries(parsed).map(([k, v]) => `${k.toUpperCase()}: ${v}`).join(' | ');
+                } catch(e) {}
+            }
+
+            let homesText = "";
+            (p.homeMeds || []).forEach(m => {
+                homesText += `  * ${m.name} [${m.dosage}] -> Conduta: ${m.action} (Justificativa: ${m.justification})\n`;
+            });
+
+            let hospsText = "";
+            (p.hospitalPrescs || []).forEach(m => {
+                hospsText += `  * ${m.name} [${m.dosage}] de ${m.frequency} via ${m.route}\n`;
+            });
+
+            const prompt = `PRESCRIÇÃO, RECONCILIAÇÃO E DIRETRIZES HOSPITALARES:\n\n` +
+                `- Nome do Paciente: ${p.name}\n` +
+                `- Setor/Leito: ${p.bed}\n` +
+                `- Data de Nascimento: ${p.birthDate || 'Não informada'}\n` +
+                `- Classificação de Manchester: ${p.triageClass || 'Não classificada'}\n` +
+                `- Queixa Principal: ${p.chiefComplaint || 'Nenhuma'}\n` +
+                `- Alergias Conhecidas: ${p.allergies || 'Nega'}\n\n` +
+                `- Sinais Vitais:\n` +
+                `  PA: ${p.pa || '--'} | FC: ${p.fc || '--'} bpm | Temp: ${p.temp || '--'} °C | SpO2: ${p.spo2 || '--'}% | Dor: ${p.pain || '0'} | Glasgow: ${p.glasgow || '15'}\n\n` +
+                `- Exame Físico:\n` +
+                `  Geral: ${p.examGeral || 'Padrão'} | Cardíaco: ${p.examCardio || 'Normal'} | Resp: ${p.examResp || 'Sem ruídos'} | Abd: ${p.examAbd || 'Flácido'} | Neuro: ${p.examNeuro || 'LOTE'}\n\n` +
+                `- Exames Laboratoriais Registrados:\n ${labsText}\n\n` +
+                `- Evolução do Plantão:\n ${p.evolutionText || 'Nenhuma nota'}\n\n` +
+                `- MEDICAMENTOS DE USO DOMICILIAR CONTÍNUO (RECONCILIAÇÃO):\n${homesText || 'Nenhum'}\n` +
+                `- PRESCRIÇÃO HOSPITALAR EDITADA PELO MÉDICO:\n${hospsText || 'Nenhuma'}`;
+
+            const systemPrompt = `Você é um Assistente Médico AI Sênior Especialista em Farmacovigilância, Reconciliação Admissional e Segurança de Prescrição Hospitalar.
+Sua tarefa é analisar os dados fornecidos deste paciente, sua reconciliação medicamentosa de admissão e os alertas de segurança contra duplicidade, fornecendo um parecer clínico e diretrizes para o prontuário.
+
+Estruture seu parecer estritamente no seguinte modelo formatado:
+[PARECER DE RECONCILIAÇÃO E SEGURANÇA MEDICAMENTOSA]
+
+1. RESUMO CLÍNICO DO PACIENTE:
+- Breve análise integrada da queixa principal, sinais vitais e laboratórios.
+
+2. AVALIAÇÃO DA RECONCILIAÇÃO DE ADMISSÃO:
+- Avaliar se as condutas domiciliares (manutenções, suspensões de metformina/antiagregantes antes de cirurgias ou exames, etc.) foram adequadas.
+- Apontar se há risco de omissão de alguma terapia contínua essencial para o paciente.
+
+3. CONTEXTO DE EVITAÇÃO DE DUPLICIDADE (SEGUNDO CHEQUE):
+- Destacar se há prescrições ativas de medicamentos idênticos (ex: mesmo princípio ativo em nomes comerciais diferentes) ou da mesma classe, alertando sobre os riscos potenciais no leito.
+- Fornecer instruções específicas para a equipe de enfermagem sobre intervalos seguros de administração.
+
+4. DIRETRIZES DE RECEITUÁRIO, CONDUTA E CRITÉRIOS DE ALTA SEGURA:
+- Dieta sugerida e hidratação.
+- Ajustes medicamentosos prioritários.
+- Critérios clínicos para desfecho (alta ou necessidade de internação em UTI/enfermaria).
+
+Aviso Legal: "Este parecer é um suporte clínico de IA e deve ser revisado, assinado e carimbado pelo médico assistente."
+
+Responda em Português do Brasil com formatação markdown limpa (use listas ordenadas ou marcadores simples).`;
+
+            const requestBody = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) throw new Error("Falha HTTP na requisição com o Google!");
+
+                const json = await response.json();
+                const resultText = json.candidates?.[0]?.content?.parts?.[0]?.text || "Nenhum resultado recebido do modelo.";
+
+                p.clinicalGuidanceText = resultText;
+                savePatientsToDB();
+                renderAIGuidanceTab();
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = `
+                    <div class="p-4 rounded-xl bg-red-500/15 border border-red-500/20 text-red-400 text-xs">
+                        ⚠️ Erro ao connectar com a IA do Gemini. Verifique se sua Chave API está ativa e possui créditos de consulta.
+                        <br><br>Detalhe: ${error.message}
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="sparkles" class="h-4 w-4"></i><span>Solicitar Análise Inteligente</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        // Fast clean UI markdown converter parser
+        function formattedMarkdownRender(md) {
+            if (!md) return '';
+            return md
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/### (.*?)\n/g, '<h4 class="font-bold text-white text-sm my-2">$1</h4>')
+                .replace(/## (.*?)\n/g, '<h3 class="font-bold text-white text-base my-3 border-b border-clinical-border pb-1">$1</h3>')
+                .replace(/- (.*?)\n/g, '<li class="ml-4 list-disc text-slate-300">$1</li>');
+        }
+
+        // --- GLOBAL WORKFLOW CONTROLLER ACTIONS ---
+        function selectPatient(id) {
+            activePatientId = id;
+            activeStageIndex = 0;
+
+            // Trigger Views Shift
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('clinical-suite-view').classList.remove('hidden');
+
+            syncPatientHeaderUI();
+            setWorkflowStage(0);
+        }
+
+        function exitClinicalSuite() {
+            activePatientId = null;
+            document.getElementById('clinical-suite-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            
+            // Clean Speech rec if left listening
+            if (isListening) {
+                recognition.stop();
+            }
+
+            renderDashboard();
+        }
+
+        // PATIENT ADMISSION CREATE SUBMIT
+        function submitNewPatient() {
+            const name = document.getElementById('new-patient-name').value.trim();
+            const bed = document.getElementById('new-patient-bed').value.trim();
+
+            if (!name || !bed) {
+                alert("Por favor preencha nome do paciente e indicação do leito!");
+                return;
+            }
+
+            const newId = Date.now();
+            const newPatient = {
+                id: newId,
+                name: name,
+                bed: bed,
+                birthDate: '',
+                triageClass: 'Verde',
+                chiefComplaint: '',
+                allergies: '',
+                pa: '', fc: '', temp: '', spo2: '', pain: '0', glasgow: '15',
+                examGeral: '', examCardio: '', examResp: '', examAbd: '', examNeuro: '',
+                labsJson: JSON.stringify({}),
+                evolutionText: '',
+                clinicalGuidanceText: '',
+                homeMeds: [],
+                hospitalPrescs: []
+            };
+
+            patients.push(newPatient);
+            evolutionsMap[newId] = []; // Initialize empty history list for each patient
+            savePatientsToDB();
+            saveEvolutionsToDB();
+
+            closeAddPatientModal();
+            renderDashboard();
+
+            // Clear inputs for next usage
+            document.getElementById('new-patient-name').value = '';
+            document.getElementById('new-patient-bed').value = '';
+
+            // Jump straight to editing this new patient
+            selectPatient(newId);
+        }
+
+        // SAFE CONFIRMATION OF PATIENT DELETION (Alta de leito)
+        function deleteActivePatientConfirm() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            if (confirm(`Tem certeza que deseja dar alta e excluir permanentemente do plantão o prontuário do paciente: ${p.name}? All medical records will be deleted.`)) {
+                patients = patients.filter(pat => pat.id !== activePatientId);
+                delete evolutionsMap[activePatientId]; // Delete his evolutions map too
+                savePatientsToDB();
+                saveEvolutionsToDB();
+                exitClinicalSuite();
+            }
+        }
+
+        // --- PRINTOUT REPORTERS (PRINT SUITE) ---
+        function printClinicalReport() {
+            const p = patients.find(pat => pat.id === activePatientId);
+            if (!p) return;
+
+            const printWindow = window.open('', '_blank');
+            
+            // Format labs
+            let labsListHtml = '';
+            try {
+                const labs = JSON.parse(p.labsJson || '{}');
+                labsListHtml = Object.entries(labs).map(([name, val]) => `
+                    <div style="padding: 6px; border-bottom: 1px solid #ccc; font-size: 11px;">
+                        <strong>${name.toUpperCase()}:</strong> ${val}
+                    </div>
+                `).join('');
+            } catch(e) {}
+
+            // Format home meds
+            let homeMedsHtml = '';
+            (p.homeMeds || []).forEach(m => {
+                homeMedsHtml += `<li><strong>${m.name} [${m.dosage}]</strong> - Conduta Adm: ${m.action} (Justificativa: ${m.justification})</li>`;
+            });
+
+            // Format hospital prescs
+            let hospMedsHtml = '';
+            (p.hospitalPrescs || []).forEach(m => {
+                hospMedsHtml += `<li><strong>${m.name}</strong> - ${m.dosage} (${m.frequency}) Via ${m.route}</li>`;
+            });
+
+            // Format complete evolutions history (AS REQUESTED BY USER)
+            let evsHostHtml = '';
+            const listEvs = evolutionsMap[p.id] || [];
+            if (listEvs.length === 0) {
+                evsHostHtml = `<p style="font-size:11px; color:#666;">Sem registros no histórico clínico.</p>`;
+            } else {
+                const sorted = [...listEvs].sort((a,b) => b.timestamp - a.timestamp);
+                sorted.forEach(ev => {
+                    const dtStr = new Date(ev.timestamp).toLocaleString('pt-BR');
+                    evsHostHtml += `
+                        <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px dashed #ddd;">
+                            <span style="font-size:10px; color:#00D4AA; font-weight:bold;">[${dtStr}] - NOTA CLÍNICA DE HISTÓRICO:</span>
+                            <p style="font-size:11px; margin:4px 0 0 0; color:#111;">${ev.text}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Sensus Pro 4.0 - Relatório de Prontuário Clínico</title>
+                    <style>
+                        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; line-height: 1.5; padding: 20px; }
+                        h1 { font-size: 20px; border-bottom: 2px solid #00D4AA; padding-bottom: 5px; margin-bottom: 15px; }
+                        h2 { font-size: 14px; color: #1f3d7a; background: #eef2fa; padding: 6px 10px; margin-top: 20px; text-transform: uppercase; }
+                        .flex-row { display: flex; justify-content: space-between; gap: 20px; }
+                        .field { font-size: 12px; margin-bottom: 6px; }
+                        li { font-size: 11px; margin-bottom: 4px; }
+                        .signature { margin-top: 40px; border-top: 1px solid #999; width: 300px; text-align: center; padding-top: 5px; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div style="text-align: right; font-size: 10px; color: #888;">Impresso em: ${new Date().toLocaleString('pt-BR')}</div>
+                    <h1>SENSUS PRO 4.0 - DOCUMENTAÇÃO DE LEITO & SEGURANÇA</h1>
+
+                    <div class="flex-row">
+                        <div style="flex: 1;">
+                            <div class="field"><strong>Nome do Paciente:</strong> ${p.name}</div>
+                            <div class="field"><strong>Setor/Leito:</strong> ${p.bed || '--'}</div>
+                            <div class="field"><strong>Nascimento:</strong> ${p.birthDate || '--'}</div>
+                            <div class="field"><strong>Triage de Manchester:</strong> ${p.triageClass || '--'}</div>
+                            <div class="field"><strong>Alergias:</strong> ${p.allergies || 'Nega'}</div>
+                        </div>
+                        <div style="flex: 1; background: #f9f9f9; padding: 10px; border: 1px solid #eee;">
+                            <div class="field"><strong>Sinais Vitais:</strong></div>
+                            <div class="field">PA: ${p.pa || '--'} | FC: ${p.fc || '--'} bpm</div>
+                            <div class="field">Temp: ${p.temp || '--'} °C | SpO2: ${p.spo2 || '--'}%</div>
+                            <div class="field">Dor: ${p.pain || '0'} | Glasgow: ${p.glasgow || '15'}</div>
+                        </div>
+                    </div>
+
+                    <h2>Queixa Inicial (Admissão)</h2>
+                    <p style="font-size:11px;">${p.chiefComplaint || 'Nenhum sintoma de entrada relatado.'}</p>
+
+                    <h2>Exames Laboratoriais</h2>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                        ${labsListHtml || '<p style="font-size:11px;">Nenhum exame cadastrado.</p>'}
+                    </div>
+
+                    <h2>Medicamentos Reconciliados (Casa)</h2>
+                    <ul>${homeMedsHtml || '<li>Nenhum medicamento listado</li>'}</ul>
+
+                    <h2>Prescrição Hospitalar Ativa</h2>
+                    <ul>${hospMedsHtml || '<li>Nenhum medicamento prescrito</li>'}</ul>
+
+                    <h2>Histórico Cronológico de Evoluções</h2>
+                    <div style="border: 1px solid #ccc; padding: 10px; border-radius: 6px; background:#fafafa;">
+                        ${evsHostHtml}
+                    </div>
+
+                    <h2>Parecer e Diretrizes Clínicas de Alta (Gemini AI)</h2>
+                    <div style="font-size:11px; white-space:pre-wrap; background:#f4faf6; border:1px solid #d4ebd6; padding:10px; border-radius:6px;">
+                        ${p.clinicalGuidanceText || 'Nenhum parecer solicitado.'}
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; margin-top:50px;">
+                        <div class="signature">Assinatura do Médico Assistente</div>
+                        <div class="signature">Assinatura do Farmacêutico / Enfermeiro</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- GEMINI SECURITY API RE-SETTERS MODAL ---
+        function toggleSettingsModal() {
+            const m = document.getElementById('settings-modal');
+            m.classList.toggle('hidden');
+            if (!m.classList.contains('hidden')) {
+                const stored = localStorage.getItem('gemini_api_key');
+                document.getElementById('gemini-token-field').value = stored || '';
+            }
+        }
+
+        function saveGeminiToken() {
+            const key = document.getElementById('gemini-token-field').value.trim();
+            if (key) {
+                localStorage.setItem('gemini_api_key', key);
+                showVoiceCommandFeedback("🔑 Chave API salva!");
+            } else {
+                localStorage.removeItem('gemini_api_key');
+                showVoiceCommandFeedback("♻️ Chave API limpa");
+            }
+            toggleSettingsModal();
+            syncGeminiKeyStatus();
+        }
+
+        function syncGeminiKeyStatus() {
+            const key = localStorage.getItem('gemini_api_key');
+            const ind = document.getElementById('api-key-indicator');
+            if (key) {
+                ind.className = "h-2.5 w-2.5 rounded-full bg-clinical-teal shadow-lg shadow-clinical-teal/30 animate-pulse";
+                ind.title = "Chave API do Gemini ativa!";
+            } else {
+                ind.className = "h-2.5 w-2.5 rounded-full bg-red-500 animate-ping";
+                ind.title = "Chave API do Gemini ausente! Configure no botão chave.";
+            }
+        }
+
+        // MODAL OPENERS & CLOSERS
+        function openAddPatientModal() { document.getElementById('add-patient-modal').classList.remove('hidden'); }
+        function closeAddPatientModal() { document.getElementById('add-patient-modal').classList.add('hidden'); }
+
+        function openAddHomeMedModal() { document.getElementById('add-home-med-modal').classList.remove('hidden'); }
+        function closeAddHomeMedModal() { document.getElementById('add-home-med-modal').classList.add('hidden'); }
+
+        function openAddHospitalPrescModal() { document.getElementById('add-hospital-presc-modal').classList.remove('hidden'); }
+        function closeAddHospitalPrescModal() { document.getElementById('add-hospital-presc-modal').classList.add('hidden'); }
+
+        function openSpeechHelp() { document.getElementById('speech-help-modal').classList.remove('hidden'); }
+        function closeSpeechHelp() { document.getElementById('speech-help-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
